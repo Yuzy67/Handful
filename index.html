@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Handful — gesture-controlled particles</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0a0a16" />
+  <link rel="icon" href="/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+
+  <video id="webcam" playsinline autoplay muted></video>
+  <canvas id="scene"></canvas>
+
+  <div class="scrim"></div>
+
+  <div id="hud">
+    <span id="status">—</span>
+    <button id="guideBtn" class="iconBtn" aria-label="Open guide">?</button>
+  </div>
+
+  <div id="startScreen" class="overlay">
+    <div class="glassPanel startPanel">
+      <p class="eyebrow">open source · runs locally · no signup</p>
+      <h1>Handful</h1>
+      <p class="sub">Show your hand to the camera. Change your finger count to morph shapes, pinch to resize, use two hands to stretch.</p>
+      <button id="startBtn" class="primaryBtn">
+        <span class="pulseRing"></span>
+        Start
+      </button>
+      <button id="openGuideFromStart" class="ghostBtn">How does it work?</button>
+    </div>
+  </div>
+
+  <div id="guideOverlay" class="overlay hidden">
+    <div class="glassPanel guidePanel">
+      <div class="guideHeader">
+        <h2>Gestures</h2>
+        <button id="closeGuide" class="iconBtn" aria-label="Close guide">×</button>
+      </div>
+      <div class="gestureList">
+        <div class="gestureCard">
+          <div class="gestureIcon">✊</div>
+          <div>
+            <strong>Make a fist</strong>
+            <p>Collapses the cloud into a dense core</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">☝️</div>
+          <div>
+            <strong>1 finger extended</strong>
+            <p>Sphere</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">✌️</div>
+          <div>
+            <strong>2 fingers extended</strong>
+            <p>Torus (ring)</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">🤟</div>
+          <div>
+            <strong>3 fingers extended</strong>
+            <p>Galaxy spiral</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">🖖</div>
+          <div>
+            <strong>4 fingers extended</strong>
+            <p>DNA helix</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">🖐️</div>
+          <div>
+            <strong>Open palm — 5 fingers</strong>
+            <p>Cube</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">🤏</div>
+          <div>
+            <strong>Pinch thumb & index</strong>
+            <p>Resize the cloud, any shape</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">🤲</div>
+          <div>
+            <strong>Two hands, pull apart</strong>
+            <p>Stretches the shape along that direction</p>
+          </div>
+        </div>
+      </div>
+      <p class="guideNote">Shapes blend smoothly into each other as your finger count changes — no hard cuts.</p>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
