@@ -64,6 +64,13 @@ html, body {
   color: var(--text);
 }
 
+.hudRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 #status {
   background: var(--glass);
   border: 1px solid var(--glass-border);
@@ -90,6 +97,8 @@ html, body {
   cursor: pointer;
 }
 
+.hidden { display: none !important; }
+
 .overlay {
   position: fixed;
   inset: 0;
@@ -99,8 +108,6 @@ html, body {
   z-index: 10;
   background: rgba(8, 8, 18, 0.28);
 }
-
-.overlay.hidden { display: none; }
 
 .glassPanel {
   background: var(--glass);
@@ -253,6 +260,67 @@ h1 {
   line-height: 1.5;
 }
 
+.modePanel {
+  max-width: 560px;
+}
+
+.modeTitle {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 500;
+  margin: 0 0 24px;
+}
+
+.modeGrid {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.modeCard {
+  flex: 1 1 200px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  padding: 28px 20px;
+  cursor: pointer;
+  color: var(--text);
+  font-family: var(--font-body);
+  text-align: center;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.modeCard:hover {
+  transform: translateY(-4px);
+  border-color: var(--teal);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.modeCard:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+.modeIcon {
+  display: block;
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+.modeCard strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.modeCard p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pulseRing { animation: none; }
 }
@@ -279,5 +347,13 @@ h1 {
 
   .guideHeader h2 {
     font-size: 20px;
+  }
+
+  .modeTitle {
+    font-size: 20px;
+  }
+
+  .modeCard {
+    padding: 22px 16px;
   }
 }

@@ -9,14 +9,26 @@ in this stack.
 ## What's in this build
 
 - Live camera as a fullscreen AR-style background (particles float in your real room)
-- Webcam hand tracking (MediaPipe HandLandmarker, up to 2 hands)
+- Webcam hand tracking (MediaPipe HandLandmarker, up to 2 hands, GPU with automatic CPU fallback)
+- Two selectable experiences from a mode-select screen after Start:
+
+**Play with Particles**
 - **Fist** → collapse the cloud into a dense core
 - **1–5 fingers extended** → morph between 5 shapes: sphere, torus, galaxy spiral, DNA helix, cube — blended smoothly, no hard cuts
 - **Pinch thumb & index** → resize the cloud, works on any shape
 - **Two hands, pull apart** → stretch the shape along that direction
-- Start screen + in-app gesture guide covering all of the above
 
-Natural next additions: color-swipe themes, wrist-rotation control, saving/sharing a snapshot.
+**Draw in AR**
+- **Point with your index finger** (other fingers curled) and move your hand → paints a continuous glowing 3D tube tracing your fingertip's exact path — real extruded geometry with a circular cross-section, not a particle effect
+- Fingertip position is smoothed before it reaches the curve, so natural hand tremor doesn't turn into a jagged line
+- **2–5 fingers extended** → switch brush: Electric, Fire, Water, Leaf — each with its own color, thickness, and animated glow flowing along the surface
+- **Make a fist and move your hand** → grabs and drags your entire drawing as one piece, like picking up a page
+- Strokes persist once drawn (like real ink) until you clear the canvas
+- Clear button in the HUD wipes everything and resets the drawing's position
+
+Both modes share the same camera/tracking session — switch between them anytime via the ⇄ button without restarting.
+
+Natural next additions: color-swipe themes for particle mode, two-hand simultaneous drawing, saving/sharing a snapshot.
 
 ## Run it locally (free, 5 minutes)
 

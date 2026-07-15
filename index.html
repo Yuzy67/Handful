@@ -21,27 +21,52 @@
 
   <div id="hud">
     <span id="status">—</span>
-    <button id="guideBtn" class="iconBtn" aria-label="Open guide">?</button>
+    <div class="hudRight">
+      <button id="switchModeBtn" class="iconBtn hidden" aria-label="Switch mode">⇄</button>
+      <button id="clearBtn" class="iconBtn hidden" aria-label="Clear drawing">🧹</button>
+      <button id="guideBtn" class="iconBtn hidden" aria-label="Open guide">?</button>
+    </div>
   </div>
 
+  <!-- Landing screen -->
   <div id="startScreen" class="overlay">
     <div class="glassPanel startPanel">
       <p class="eyebrow">open source · runs locally · no signup</p>
       <h1>Handful</h1>
-      <p class="sub">Show your hand to the camera. Change your finger count to morph shapes, pinch to resize, use two hands to stretch.</p>
+      <p class="sub">Show your hand to the camera. Sculpt a particle cloud, or paint glowing trails in AR — your call.</p>
       <button id="startBtn" class="primaryBtn">
         <span class="pulseRing"></span>
         Start
       </button>
-      <button id="openGuideFromStart" class="ghostBtn">How does it work?</button>
     </div>
   </div>
 
-  <div id="guideOverlay" class="overlay hidden">
+  <!-- Mode select screen -->
+  <div id="modeSelectScreen" class="overlay hidden">
+    <div class="glassPanel modePanel">
+      <p class="eyebrow">choose an experience</p>
+      <h2 class="modeTitle">What do you want to do?</h2>
+      <div class="modeGrid">
+        <button id="pickParticlesBtn" class="modeCard">
+          <span class="modeIcon">🌌</span>
+          <strong>Play with Particles</strong>
+          <p>Sculpt a living particle cloud — pinch, fist, finger-count shapes, two-hand stretch</p>
+        </button>
+        <button id="pickDrawBtn" class="modeCard">
+          <span class="modeIcon">🔥</span>
+          <strong>Draw in AR</strong>
+          <p>Pinch and paint glowing electric, fire, water & leaf trails in the air</p>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Particle mode guide -->
+  <div id="particleGuideOverlay" class="overlay hidden">
     <div class="glassPanel guidePanel">
       <div class="guideHeader">
         <h2>Gestures</h2>
-        <button id="closeGuide" class="iconBtn" aria-label="Close guide">×</button>
+        <button id="closeParticleGuide" class="iconBtn" aria-label="Close guide">×</button>
       </div>
       <div class="gestureList">
         <div class="gestureCard">
@@ -102,6 +127,61 @@
         </div>
       </div>
       <p class="guideNote">Shapes blend smoothly into each other as your finger count changes — no hard cuts.</p>
+    </div>
+  </div>
+
+  <!-- Draw mode guide -->
+  <div id="drawGuideOverlay" class="overlay hidden">
+    <div class="glassPanel guidePanel">
+      <div class="guideHeader">
+        <h2>Drawing in AR</h2>
+        <button id="closeDrawGuide" class="iconBtn" aria-label="Close guide">×</button>
+      </div>
+      <div class="gestureList">
+        <div class="gestureCard">
+          <div class="gestureIcon">☝️</div>
+          <div>
+            <strong>Point with your index finger</strong>
+            <p>Draw — move your hand while pointing to paint a trail (other fingers stay curled)</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">✌️</div>
+          <div>
+            <strong>2 fingers</strong>
+            <p>Electric brush</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">🤟</div>
+          <div>
+            <strong>3 fingers</strong>
+            <p>Fire brush</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">🖖</div>
+          <div>
+            <strong>4 fingers</strong>
+            <p>Water brush</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">🖐️</div>
+          <div>
+            <strong>Open palm — 5 fingers</strong>
+            <p>Leaf brush</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">✊</div>
+          <div>
+            <strong>Make a fist and move your hand</strong>
+            <p>Grabs and drags your entire drawing as one piece</p>
+          </div>
+        </div>
+      </div>
+      <p class="guideNote">Strokes are solid glowing lines that stay put once drawn — tap 🧹 in the top bar to clear the canvas and start fresh.</p>
     </div>
   </div>
 
