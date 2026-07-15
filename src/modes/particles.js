@@ -9,6 +9,19 @@ const SCALE_MIN = 0.4;
 const SCALE_MAX = 2.0;
 const PINCH_MIN = 0.02;
 const PINCH_MAX = 0.25;
+const BASE_MAX_RADIUS = 2.3; // the galaxy shape's outer radius — the largest of the 5 presets
+const SAFE_MARGIN = 0.85; // keep shapes within 85% of the visible frustum, not touching the edges
+
+// Computes the biggest combined scale (base shape size × zoom × stretch) that
+// still fits on screen right now — recalculated every frame so it adapts
+// instantly to window resizes and, critically, to narrow portrait phone
+// screens where there's much less horizontal room than a widescreen laptop.
+function computeMaxSafeScale(camera) {
+  const halfHeight = camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
+  const halfWidth = halfHeight * camera.aspect;
+  const maxRadius = Math.min(halfHeight, halfWidth) * SAFE_MARGIN;
+  return maxRadius / BASE_MAX_RADIUS;
+}
 
 export function createParticleMode(scene, camera, statusEl, isTouchPhone) {
   const isLowCoreCount = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4;
@@ -116,8 +129,19 @@ export function createParticleMode(scene, camera, statusEl, isTouchPhone) {
       currentWeights[i] += (targetWeights[i] - currentWeights[i]) * 0.06;
     }
 
-    material.uniforms.uScale.value = currentScale;
-    material.uniforms.uStretchAmount.value = currentStretch;
+    // Keep the combined size on screen regardless of scale + stretch + aspect ratio
+    const maxSafeScale = computeMaxSafeScale(camera);
+    let displayScale = currentScale;
+    let displayStretch = currentStretch;
+    const combined = displayScale * displayStretch;
+    if (combined > maxSafeScale) {
+      const factor = maxSafeScale / combined;
+      displayScale *= factor;
+      displayStretch *= factor;
+    }
+
+    material.uniforms.uScale.value = displayScale;
+    material.uniforms.uStretchAmount.value = displayStretch;
     material.uniforms.uStretchAxis.value.copy(currentStretchAxis);
     material.uniforms.uWeights.value = currentWeights;
     material.uniforms.uTime.value += 0.01;
