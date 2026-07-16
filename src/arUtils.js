@@ -35,6 +35,20 @@ export function isPointing(lm) {
   );
 }
 
+// True when the four fingers (excluding thumb) are all curled — a fist.
+// Thumb is intentionally excluded: its tip-to-wrist geometry doesn't curl
+// the same way the other fingers do, so requiring it to also register as
+// "curled" made fist detection unreliable across different hand shapes and
+// camera angles. This is the same reasoning as isPointing() ignoring thumb.
+export function isFist(lm) {
+  return (
+    !isExtended(lm, 8, 6) &&
+    !isExtended(lm, 12, 10) &&
+    !isExtended(lm, 16, 14) &&
+    !isExtended(lm, 20, 18)
+  );
+}
+
 /**
  * Converts a mirrored-screen-space hand landmark (normalized 0..1, in raw
  * unmirrored camera coordinates, as MediaPipe returns them) into a 3D world

@@ -120,13 +120,13 @@ export function createParticleMode(scene, camera, statusEl, isTouchPhone) {
   }
 
   function tick() {
-    currentScale += (targetScale - currentScale) * 0.08;
-    currentStretch += (targetStretch - currentStretch) * 0.08;
-    currentStretchAxis.lerp(targetStretchAxis, 0.08);
+    currentScale += (targetScale - currentScale) * 0.14;
+    currentStretch += (targetStretch - currentStretch) * 0.14;
+    currentStretchAxis.lerp(targetStretchAxis, 0.14);
     if (currentStretchAxis.lengthSq() > 0.0001) currentStretchAxis.normalize();
 
     for (let i = 0; i < 5; i++) {
-      currentWeights[i] += (targetWeights[i] - currentWeights[i]) * 0.06;
+      currentWeights[i] += (targetWeights[i] - currentWeights[i]) * 0.1;
     }
 
     // Keep the combined size on screen regardless of scale + stretch + aspect ratio
@@ -145,7 +145,7 @@ export function createParticleMode(scene, camera, statusEl, isTouchPhone) {
     material.uniforms.uStretchAxis.value.copy(currentStretchAxis);
     material.uniforms.uWeights.value = currentWeights;
     material.uniforms.uTime.value += 0.01;
-    particles.rotation.y += 0.0015;
+    particles.rotation.y += 0.0025;
   }
 
   function setActive(active) {

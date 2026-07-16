@@ -3,9 +3,10 @@ import { landmarkToWorld, isPointing, countExtendedFingers } from '../arUtils.js
 
 const THEMES = ['Electric', 'Fire', 'Water', 'Leaf'];
 const DRAW_DISTANCE = 3.2; // how far in front of the camera the drawing plane sits
-const MIN_POINT_SPACING = 0.012; // world units — guards against duplicate/degenerate curve points
+const MIN_POINT_SPACING = 0.009; // world units — guards against duplicate/degenerate curve points
 const CORE_RADIUS = [0.026, 0.044, 0.036, 0.04]; // electric thinnest (like an arc), fire thickest
-const TIP_SMOOTHING = 0.35; // lower = smoother line, higher = more responsive to raw jitter
+const TIP_SMOOTHING = 0.3; // lower = smoother line, higher = more responsive to raw jitter
+const GRAB_SMOOTHING = 0.3; // same idea, applied to the fist's drag position
 const GRAB_BOUNDS = { x: 4, y: 3, z: 3 };
 
 // dynamic import so the vert/frag shaders live in their own files, same
@@ -21,7 +22,7 @@ import tubeFrag from '../shaders/tube.frag.glsl?raw';
  */
 export function createDrawMode(scene, camera, statusEl, isTouchPhone) {
   const radialSegments = isTouchPhone ? 6 : 10;
-  const tubularSegmentsPerPoint = isTouchPhone ? 2 : 3;
+  const tubularSegmentsPerPoint = isTouchPhone ? 2 : 4;
   const maxPointsPerStroke = isTouchPhone ? 300 : 500;
 
   const group = new THREE.Group();
@@ -41,6 +42,7 @@ export function createDrawMode(scene, camera, statusEl, isTouchPhone) {
   let isGrabbing = false;
   const grabAnchor = new THREE.Vector3();
   const groupStartPos = new THREE.Vector3();
+  let smoothedPalm = null; // {x, y} eased toward the raw palm landmark, same idea as smoothedTip
 
   const strokes = []; // finished strokes: { core, halo, coreMat, haloMat }
 
@@ -139,6 +141,7 @@ export function createDrawMode(scene, camera, statusEl, isTouchPhone) {
     if (hands.length === 0) {
       if (activePoints) endStroke();
       isGrabbing = false;
+      smoothedPalm = null;
       statusEl.textContent = `Show your hand — ${THEMES[currentTheme]} brush selected`;
       return;
     }
@@ -147,6 +150,7 @@ export function createDrawMode(scene, camera, statusEl, isTouchPhone) {
 
     if (isPointing(lm)) {
       isGrabbing = false;
+      smoothedPalm = null;
       const rawTip = lm[8]; // index fingertip
 
       if (!smoothedTip) {
@@ -166,10 +170,23 @@ export function createDrawMode(scene, camera, statusEl, isTouchPhone) {
 
     const fingerCount = countExtendedFingers(lm);
 
-    if (fingerCount === 0) {
-      // Fist — grab and drag the entire drawing as one piece
-      const palm = lm[9];
-      const worldPos = landmarkToWorld(palm, camera, DRAW_DISTANCE);
+    // Hysteresis: a true fist (0 fingers) is required to START a grab, but
+    // once grabbing, a single noisy frame reading 1 finger won't cancel it —
+    // this is what keeps a hold-and-drag feeling continuous instead of
+    // stuttering every time hand tracking flickers for a frame.
+    const shouldGrab = isGrabbing ? fingerCount <= 1 : fingerCount === 0;
+
+    if (shouldGrab) {
+      const rawPalm = lm[9];
+
+      if (!smoothedPalm) {
+        smoothedPalm = { x: rawPalm.x, y: rawPalm.y };
+      } else {
+        smoothedPalm.x += (rawPalm.x - smoothedPalm.x) * GRAB_SMOOTHING;
+        smoothedPalm.y += (rawPalm.y - smoothedPalm.y) * GRAB_SMOOTHING;
+      }
+
+      const worldPos = landmarkToWorld(smoothedPalm, camera, DRAW_DISTANCE);
 
       if (!isGrabbing) {
         isGrabbing = true;
@@ -187,6 +204,7 @@ export function createDrawMode(scene, camera, statusEl, isTouchPhone) {
     }
 
     isGrabbing = false;
+    smoothedPalm = null;
 
     if (fingerCount >= 2 && fingerCount <= 5) {
       currentTheme = fingerCount - 2; // 2 fingers->Electric, 3->Fire, 4->Water, 5->Leaf
@@ -223,6 +241,7 @@ export function createDrawMode(scene, camera, statusEl, isTouchPhone) {
     if (!active) {
       if (activePoints) endStroke();
       isGrabbing = false;
+      smoothedPalm = null;
     }
   }
 
