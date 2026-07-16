@@ -10,43 +10,92 @@ export function clamp(v, min, max) {
   return Math.min(Math.max(v, min), max);
 }
 
-export function isExtended(lm, tipIdx, refIdx, wristIdx = 0) {
-  return dist2D(lm[tipIdx], lm[wristIdx]) > dist2D(lm[refIdx], lm[wristIdx]) * 1.15;
+// A stable reference for "how big is this hand is in the frame" (wrist to
+// middle-finger knuckle) — used to scale extension thresholds so detection
+// behaves consistently whether the hand is close to the camera (typical
+// laptop webcam use) or farther away (typical phone selfie-camera distance),
+// instead of a flat ratio that only really works well at one distance.
+function handScale(lm) {
+  return dist2D(lm[0], lm[9]) || 0.001;
 }
 
+function isExtendedRaw(lm, tipIdx, refIdx, scale, marginMultiplier, wristIdx = 0) {
+  const margin = scale * 0.22 * marginMultiplier;
+  return dist2D(lm[tipIdx], lm[wristIdx]) - dist2D(lm[refIdx], lm[wristIdx]) > margin;
+}
+
+// General single-finger check, exported for reuse. Internal call sites below
+// use isExtendedRaw directly so they can share one precomputed handScale
+// instead of recomputing it per finger.
+export function isExtended(lm, tipIdx, refIdx, wristIdx = 0) {
+  return isExtendedRaw(lm, tipIdx, refIdx, handScale(lm), 1.0, wristIdx);
+}
+
+// Counts extended fingers, thumb included. The thumb uses a noticeably
+// stricter margin than the other four: in its natural resting position the
+// thumb very often reads as borderline "extended" under a simple distance
+// check, which was silently inflating every count by one (2 fingers reading
+// as 3, 3 as 4, and so on). It still registers when clearly, deliberately
+// extended (e.g. an open palm), just not from a relaxed resting position.
 export function countExtendedFingers(lm) {
+  const scale = handScale(lm);
   let count = 0;
-  if (isExtended(lm, 4, 2)) count++; // thumb
-  if (isExtended(lm, 8, 6)) count++; // index
-  if (isExtended(lm, 12, 10)) count++; // middle
-  if (isExtended(lm, 16, 14)) count++; // ring
-  if (isExtended(lm, 20, 18)) count++; // pinky
+  if (isExtendedRaw(lm, 4, 2, scale, 1.7)) count++; // thumb — stricter margin
+  if (isExtendedRaw(lm, 8, 6, scale, 1.0)) count++; // index
+  if (isExtendedRaw(lm, 12, 10, scale, 1.0)) count++; // middle
+  if (isExtendedRaw(lm, 16, 14, scale, 1.0)) count++; // ring
+  if (isExtendedRaw(lm, 20, 18, scale, 1.0)) count++; // pinky
   return count;
 }
 
-// True when only the index finger is extended (a "pointing" pose) —
-// thumb state is ignored since it varies naturally while pointing.
+// True when only the index finger is extended (a "pointing" pose) — thumb
+// state is ignored since it varies naturally while pointing.
 export function isPointing(lm) {
+  const scale = handScale(lm);
   return (
-    isExtended(lm, 8, 6) &&
-    !isExtended(lm, 12, 10) &&
-    !isExtended(lm, 16, 14) &&
-    !isExtended(lm, 20, 18)
+    isExtendedRaw(lm, 8, 6, scale, 1.0) &&
+    !isExtendedRaw(lm, 12, 10, scale, 1.0) &&
+    !isExtendedRaw(lm, 16, 14, scale, 1.0) &&
+    !isExtendedRaw(lm, 20, 18, scale, 1.0)
   );
 }
 
 // True when the four fingers (excluding thumb) are all curled — a fist.
-// Thumb is intentionally excluded: its tip-to-wrist geometry doesn't curl
-// the same way the other fingers do, so requiring it to also register as
-// "curled" made fist detection unreliable across different hand shapes and
-// camera angles. This is the same reasoning as isPointing() ignoring thumb.
+// Thumb is intentionally excluded: many people naturally rest the thumb
+// across or beside a closed fist rather than fully tucked in, and requiring
+// it to also register "curled" made grab/collapse gestures fail constantly.
 export function isFist(lm) {
+  const scale = handScale(lm);
   return (
-    !isExtended(lm, 8, 6) &&
-    !isExtended(lm, 12, 10) &&
-    !isExtended(lm, 16, 14) &&
-    !isExtended(lm, 20, 18)
+    !isExtendedRaw(lm, 8, 6, scale, 1.0) &&
+    !isExtendedRaw(lm, 12, 10, scale, 1.0) &&
+    !isExtendedRaw(lm, 16, 14, scale, 1.0) &&
+    !isExtendedRaw(lm, 20, 18, scale, 1.0)
   );
+}
+
+// Requires the same raw value for `requiredFrames` consecutive calls before
+// "committing" to it. This filters out single-frame hand-tracking noise
+// (a momentary misread of 3 fingers instead of 2) without adding
+// perceptible lag, since a real, deliberate gesture change is naturally
+// held for longer than ~3 frames anyway.
+export function createDebouncer(requiredFrames = 3) {
+  let candidate = null;
+  let streak = 0;
+  let committed = null;
+
+  return function update(value) {
+    if (value === candidate) {
+      streak++;
+    } else {
+      candidate = value;
+      streak = 1;
+    }
+    if (streak >= requiredFrames) {
+      committed = candidate;
+    }
+    return committed;
+  };
 }
 
 /**

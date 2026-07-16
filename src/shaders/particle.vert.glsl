@@ -32,6 +32,7 @@ void main() {
   vDist = length(pos);
 
   vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-  gl_PointSize = (27.0 / -mvPosition.z);
+  float sizeFactor = clamp(uScale, 0.35, 1.5);
+  gl_PointSize = (27.0 * sizeFactor) / -mvPosition.z;
   gl_Position = projectionMatrix * mvPosition;
 }

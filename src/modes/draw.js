@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { landmarkToWorld, isPointing, countExtendedFingers } from '../arUtils.js';
+import { landmarkToWorld, isPointing, isFist, countExtendedFingers, createDebouncer } from '../arUtils.js';
 
 const THEMES = ['Electric', 'Fire', 'Water', 'Leaf'];
 const DRAW_DISTANCE = 3.2; // how far in front of the camera the drawing plane sits
@@ -43,6 +43,7 @@ export function createDrawMode(scene, camera, statusEl, isTouchPhone) {
   const grabAnchor = new THREE.Vector3();
   const groupStartPos = new THREE.Vector3();
   let smoothedPalm = null; // {x, y} eased toward the raw palm landmark, same idea as smoothedTip
+  const fingerCountDebouncer = createDebouncer(3);
 
   const strokes = []; // finished strokes: { core, halo, coreMat, haloMat }
 
@@ -168,13 +169,15 @@ export function createDrawMode(scene, camera, statusEl, isTouchPhone) {
 
     if (activePoints) endStroke();
 
-    const fingerCount = countExtendedFingers(lm);
+    const rawFingerCount = countExtendedFingers(lm);
 
-    // Hysteresis: a true fist (0 fingers) is required to START a grab, but
-    // once grabbing, a single noisy frame reading 1 finger won't cancel it —
+    // Hysteresis: a true fist is required to START a grab, but once
+    // grabbing, a single noisy frame reading 1 finger won't cancel it —
     // this is what keeps a hold-and-drag feeling continuous instead of
-    // stuttering every time hand tracking flickers for a frame.
-    const shouldGrab = isGrabbing ? fingerCount <= 1 : fingerCount === 0;
+    // stuttering every time hand tracking flickers for a frame. isFist()
+    // ignores the thumb entirely, since a resting thumb next to a closed
+    // fist was the main reason grabs failed to trigger at all before.
+    const shouldGrab = isGrabbing ? rawFingerCount <= 1 : isFist(lm);
 
     if (shouldGrab) {
       const rawPalm = lm[9];
@@ -206,6 +209,7 @@ export function createDrawMode(scene, camera, statusEl, isTouchPhone) {
     isGrabbing = false;
     smoothedPalm = null;
 
+    const fingerCount = fingerCountDebouncer(rawFingerCount) ?? rawFingerCount;
     if (fingerCount >= 2 && fingerCount <= 5) {
       currentTheme = fingerCount - 2; // 2 fingers->Electric, 3->Fire, 4->Water, 5->Leaf
     }
