@@ -6,6 +6,20 @@ export function dist2D(a, b) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
+// A curled finger moves mostly in depth (toward/away from the camera), not
+// in screen-space x/y — a 2D-only distance barely registers that motion
+// unless the hand happens to be oriented so the curl lines up with the
+// camera's flat plane. Using the z MediaPipe already provides makes curl
+// detection work regardless of hand orientation. z is a noisier estimate
+// than x/y (depth from a single camera is inherently harder), so it's
+// weighted down slightly rather than trusted equally.
+function dist3D(a, b) {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  const dz = ((a.z || 0) - (b.z || 0)) * 0.7;
+  return Math.sqrt(dx * dx + dy * dy + dz * dz);
+}
+
 export function clamp(v, min, max) {
   return Math.min(Math.max(v, min), max);
 }
@@ -16,12 +30,12 @@ export function clamp(v, min, max) {
 // laptop webcam use) or farther away (typical phone selfie-camera distance),
 // instead of a flat ratio that only really works well at one distance.
 function handScale(lm) {
-  return dist2D(lm[0], lm[9]) || 0.001;
+  return dist3D(lm[0], lm[9]) || 0.001;
 }
 
 function isExtendedRaw(lm, tipIdx, refIdx, scale, marginMultiplier, wristIdx = 0) {
   const margin = scale * 0.22 * marginMultiplier;
-  return dist2D(lm[tipIdx], lm[wristIdx]) - dist2D(lm[refIdx], lm[wristIdx]) > margin;
+  return dist3D(lm[tipIdx], lm[wristIdx]) - dist3D(lm[refIdx], lm[wristIdx]) > margin;
 }
 
 // General single-finger check, exported for reuse. Internal call sites below
