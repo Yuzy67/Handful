@@ -3,7 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Handful — gesture-controlled particles</title>
+  <title>Handful — Hand Gesture Particle Playground & AR Drawing Tool</title>
+  <meta name="description" content="Control 3D particles and draw glowing AR art with just your hands — free, open source, runs entirely in your browser. No app download, no signup." />
+  <meta name="keywords" content="hand gesture control, AR drawing, particle simulation, MediaPipe, Three.js, webcam gesture, browser AR, open source, hand tracking web app" />
+  <link rel="canonical" href="https://handful-iota.vercel.app/" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph (Facebook, Instagram, WhatsApp, LinkedIn link previews) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Handful — Hand Gesture Particle Playground & AR Drawing Tool" />
+  <meta property="og:description" content="Control 3D particles and draw glowing AR art with just your hands — free, open source, runs entirely in your browser." />
+  <meta property="og:url" content="https://handful-iota.vercel.app/" />
+  <meta property="og:image" content="https://handful-iota.vercel.app/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:site_name" content="Handful" />
+
+  <!-- Twitter/X card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Handful — Hand Gesture Particle Playground & AR Drawing Tool" />
+  <meta name="twitter:description" content="Control 3D particles and draw glowing AR art with just your hands — free, open source, runs entirely in your browser." />
+  <meta name="twitter:image" content="https://handful-iota.vercel.app/og-image.png" />
+
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#0a0a16" />
   <link rel="icon" href="/icon-192.png?v=2" />
@@ -11,6 +32,28 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/src/style.css" />
+
+  <!-- Structured data — helps Google understand this is a free web app -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Handful",
+    "description": "Control 3D particles and draw glowing AR art with just your hands — free, open source, runs entirely in your browser.",
+    "url": "https://handful-iota.vercel.app/",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "Any (runs in browser)",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Yuzy"
+    }
+  }
+  </script>
 </head>
 <body>
 
