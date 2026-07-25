@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 import { createParticleMode } from './modes/particles.js';
 import { createDrawMode } from './modes/draw.js';
+import { createSliceMode } from './modes/slice.js';
 
 // ---- DOM ----
 const video = document.getElementById('webcam');
@@ -14,6 +15,7 @@ const startScreen = document.getElementById('startScreen');
 const modeSelectScreen = document.getElementById('modeSelectScreen');
 const pickParticlesBtn = document.getElementById('pickParticlesBtn');
 const pickDrawBtn = document.getElementById('pickDrawBtn');
+const pickSliceBtn = document.getElementById('pickSliceBtn');
 const switchModeBtn = document.getElementById('switchModeBtn');
 const clearBtn = document.getElementById('clearBtn');
 const guideBtn = document.getElementById('guideBtn');
@@ -22,12 +24,14 @@ const particleGuideOverlay = document.getElementById('particleGuideOverlay');
 const closeParticleGuide = document.getElementById('closeParticleGuide');
 const drawGuideOverlay = document.getElementById('drawGuideOverlay');
 const closeDrawGuide = document.getElementById('closeDrawGuide');
+const sliceGuideOverlay = document.getElementById('sliceGuideOverlay');
+const closeSliceGuide = document.getElementById('closeSliceGuide');
 
 // ---- three.js + tracking state ----
 let handLandmarker;
 let scene, camera, renderer;
-let particleMode, drawMode;
-let activeMode = 'particles'; // 'particles' | 'draw'
+let particleMode, drawMode, sliceMode;
+let activeMode = 'particles'; // 'particles' | 'draw' | 'slice'
 let lastVideoTime = -1;
 let lastFrameTime = 0;
 
@@ -96,9 +100,11 @@ function initScene() {
   const isTouchPhone = isTouchPhoneDevice();
   particleMode = createParticleMode(scene, camera, statusEl, isTouchPhone);
   drawMode = createDrawMode(scene, camera, statusEl, isTouchPhone);
+  sliceMode = createSliceMode(scene, camera, statusEl, isTouchPhone);
 
   particleMode.setActive(true);
   drawMode.setActive(false);
+  sliceMode.setActive(false);
 
   lastFrameTime = performance.now();
 }
@@ -108,7 +114,8 @@ function setActiveMode(mode) {
   activeMode = mode;
   particleMode.setActive(mode === 'particles');
   drawMode.setActive(mode === 'draw');
-  clearBtn.classList.toggle('hidden', mode !== 'draw');
+  sliceMode.setActive(mode === 'slice');
+  clearBtn.classList.toggle('hidden', mode === 'particles');
 }
 
 // ---- detection + render loops ----
@@ -118,6 +125,8 @@ function detectLoop() {
     const results = handLandmarker.detectForVideo(video, performance.now());
     if (activeMode === 'draw') {
       drawMode.updateGesture(results);
+    } else if (activeMode === 'slice') {
+      sliceMode.updateGesture(results);
     } else {
       particleMode.updateGesture(results);
     }
@@ -132,8 +141,9 @@ function animate() {
   const dt = Math.min((now - lastFrameTime) / 1000, 0.05);
   lastFrameTime = now;
 
-  particleMode.tick();
+  particleMode.tick(dt);
   drawMode.tick(dt);
+  sliceMode.tick(dt);
 
   renderer.render(scene, camera);
 }
@@ -179,17 +189,28 @@ pickDrawBtn.addEventListener('click', () => {
   modeSelectScreen.classList.add('hidden');
 });
 
+pickSliceBtn.addEventListener('click', () => {
+  setActiveMode('slice');
+  modeSelectScreen.classList.add('hidden');
+});
+
 switchModeBtn.addEventListener('click', () => {
   modeSelectScreen.classList.remove('hidden');
 });
 
 clearBtn.addEventListener('click', () => {
-  drawMode.clear();
+  if (activeMode === 'slice') {
+    sliceMode.reset();
+  } else {
+    drawMode.clear();
+  }
 });
 
 guideBtn.addEventListener('click', () => {
   if (activeMode === 'draw') {
     drawGuideOverlay.classList.remove('hidden');
+  } else if (activeMode === 'slice') {
+    sliceGuideOverlay.classList.remove('hidden');
   } else {
     particleGuideOverlay.classList.remove('hidden');
   }
@@ -197,6 +218,7 @@ guideBtn.addEventListener('click', () => {
 
 closeParticleGuide.addEventListener('click', () => particleGuideOverlay.classList.add('hidden'));
 closeDrawGuide.addEventListener('click', () => drawGuideOverlay.classList.add('hidden'));
+closeSliceGuide.addEventListener('click', () => sliceGuideOverlay.classList.add('hidden'));
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

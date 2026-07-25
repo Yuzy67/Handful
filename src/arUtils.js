@@ -113,6 +113,61 @@ export function createDebouncer(requiredFrames = 3) {
 }
 
 /**
+ * One Euro Filter (Casiez, Godin, Vogel 2012) — the standard technique for
+ * smoothing noisy real-time position signals like hand/finger tracking. It
+ * adapts its own smoothing strength to the signal's speed: heavy smoothing
+ * while nearly still (kills tracking jitter), automatically loosening up
+ * during fast movement so a real swipe doesn't feel laggy or delayed. This
+ * is a meaningfully better fit here than a flat exponential-moving-average,
+ * which has to pick one smoothing strength that's always a compromise
+ * between "smooth when still" and "responsive when fast."
+ *
+ * minCutoff: smoothing strength at rest — lower is smoother but adds lag.
+ * beta: how quickly smoothing backs off as speed increases — higher means
+ * fast motion stays crisper.
+ */
+export function createOneEuroFilter(minCutoff = 1.2, beta = 0.02, dCutoff = 1.0) {
+  let xPrev = null;
+  let dxPrev = 0;
+  let tPrev = null;
+
+  function alpha(cutoff, dt) {
+    const tau = 1 / (2 * Math.PI * cutoff);
+    return 1 / (1 + tau / dt);
+  }
+
+  return {
+    filter(x, t) {
+      if (tPrev === null) {
+        tPrev = t;
+        xPrev = x;
+        dxPrev = 0;
+        return x;
+      }
+      const dt = Math.max(t - tPrev, 1e-6);
+      tPrev = t;
+
+      const dx = (x - xPrev) / dt;
+      const aD = alpha(dCutoff, dt);
+      const dxHat = aD * dx + (1 - aD) * dxPrev;
+
+      const cutoff = minCutoff + beta * Math.abs(dxHat);
+      const a = alpha(cutoff, dt);
+      const xHat = a * x + (1 - a) * xPrev;
+
+      xPrev = xHat;
+      dxPrev = dxHat;
+      return xHat;
+    },
+    reset() {
+      xPrev = null;
+      dxPrev = 0;
+      tPrev = null;
+    },
+  };
+}
+
+/**
  * Converts a mirrored-screen-space hand landmark (normalized 0..1, in raw
  * unmirrored camera coordinates, as MediaPipe returns them) into a 3D world
  * position sitting on a virtual pane a fixed `distance` in front of the

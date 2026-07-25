@@ -10,7 +10,7 @@ in this stack.
 
 - Live camera as a fullscreen AR-style background (particles float in your real room)
 - Webcam hand tracking (MediaPipe HandLandmarker, up to 2 hands, GPU with automatic CPU fallback)
-- Two selectable experiences from a mode-select screen after Start:
+- Three selectable experiences from a mode-select screen after Start:
 
 **Play with Particles**
 - **Fist** → collapse the cloud into a dense core
@@ -26,7 +26,22 @@ in this stack.
 - Strokes persist once drawn (like real ink) until you clear the canvas
 - Clear button in the HUD wipes everything and resets the drawing's position
 
-Both modes share the same camera/tracking session — switch between them anytime via the ⇄ button without restarting.
+**Slice Fruits**
+- 11 procedurally-textured fruits (apple, watermelon, lemon, grape, mango, strawberry, orange, kiwi, coconut, peach, pomegranate) arc up and fall under real gravity — each with its own non-spherical proportions (oblong lemon and strawberry, flattened apple and orange, round grape) instead of every fruit being a plain sphere
+- Skin patterns are UV-mapped to correctly wrap the sphere (watermelon stripes run as true vertical meridians, not a diagonal smear), and each fruit's sliced cross-section shows three distinct layers — skin, rind, flesh — with its own realistic internal detail: citrus wedges, a mango/peach pit, kiwi's seed ring, pomegranate's packed arils
+- **Drag your index finger through a fruit** → slices it into two physically separating halves with a matching flesh cross-section, a juice burst, an expanding shockwave ring, and a quick flash
+- **💣 Bombs** spawn among the fruit — dark, pulsing, unmistakable. Slicing one costs points instead of earning them, with its own distinct smoke-burst explosion
+- Works with **both hands independently** — each can slice on its own
+- A lightweight glowing blade trail follows fast finger motion
+- Live **score and strike rate** shown in the HUD (score = fruit sliced minus a penalty per bomb hit); clear button resets everything and starts a fresh run
+- Fruit spawn positions and arc height are recalculated from the live screen size every time, so nothing spawns or arcs off-screen on any aspect ratio, including narrow phones
+- Fingertip position is lightly smoothed before it's used for both the blade trail and hit detection — reduces raw tracking jitter without adding noticeable lag
+- The last few swipe segments are tested each update, not just the newest one, so a fast continuous swipe can't slip past a fruit purely because of which exact frame boundary got tested
+- Fruits spin around a single random axis rather than tumbling on all three independently, drift decays slightly over the arc like real air resistance, and sliced halves "pop" briefly oversized before settling to size — small physical-motion details that add up
+- **Difficulty ramps up the longer a run continues** — fruits launch faster and spawn more often, reaching full difficulty in about 30 seconds. A fruit already in the air keeps the speed it launched with — only newly spawned fruits reflect the harder difficulty, so nothing jarringly speeds up mid-flight. Resets alongside your score when you hit clear.
+- Swipe detection is timed against the real interval between camera frames (not the render loop), and the blade trail is a single pre-allocated, in-place-updated mesh rather than rebuilt from scratch every frame — deliberate fixes for lag and inconsistent detection, especially on phones, which is most of this app's traffic. Materials are intentionally unlit (a texture with baked-in shading, not real-time per-pixel lighting) for the same reason — real dynamic lighting is one of the more expensive things to ask a phone GPU to do, especially with several fruits, halves, and effects on screen at once.
+
+All three modes share the same camera/tracking session — switch between them anytime via the ⇄ button without restarting.
 
 Natural next additions: color-swipe themes for particle mode, two-hand simultaneous drawing, saving/sharing a snapshot.
 

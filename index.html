@@ -77,7 +77,7 @@
     <div class="glassPanel startPanel">
       <p class="eyebrow">open source · runs locally · no signup</p>
       <h1>Handful</h1>
-      <p class="sub">Show your hand to the camera. Sculpt a particle cloud, or paint glowing trails in AR — your call.</p>
+      <p class="sub">Show your hand to the camera. Sculpt a particle cloud, paint glowing trails in AR, or slice flying fruit — your call.</p>
       <button id="startBtn" class="primaryBtn">
         <span class="pulseRing"></span>
         Start
@@ -100,6 +100,11 @@
           <span class="modeIcon">🔥</span>
           <strong>Draw in AR</strong>
           <p>Pinch and paint glowing electric, fire, water & leaf trails in the air</p>
+        </button>
+        <button id="pickSliceBtn" class="modeCard">
+          <span class="modeIcon">🍉</span>
+          <strong>Slice Fruits</strong>
+          <p>Drag your fingers through flying fruit — dodge the bombs, both hands work</p>
         </button>
       </div>
     </div>
@@ -226,6 +231,54 @@
         </div>
       </div>
       <p class="guideNote">Strokes are solid glowing lines that stay put once drawn — tap 🧹 in the top bar to clear the canvas and start fresh.</p>
+    </div>
+  </div>
+
+  <!-- Slice mode guide -->
+  <div id="sliceGuideOverlay" class="overlay hidden">
+    <div class="glassPanel guidePanel">
+      <div class="guideHeader">
+        <h2>Slicing Fruit</h2>
+        <button id="closeSliceGuide" class="iconBtn" aria-label="Close guide">×</button>
+      </div>
+      <div class="gestureList">
+        <div class="gestureCard">
+          <div class="gestureIcon">👆</div>
+          <div>
+            <strong>Drag your index finger through a fruit</strong>
+            <p>Slices it — a real swipe is needed, just touching won't cut it</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">🙌</div>
+          <div>
+            <strong>Use both hands at once</strong>
+            <p>Each hand slices independently — double your reach</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">🍉</div>
+          <div>
+            <strong>11 fruits to slice</strong>
+            <p>Apple, watermelon, lemon, grape, mango, strawberry, orange, kiwi, coconut, peach, pomegranate</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">💣</div>
+          <div>
+            <strong>Watch out for bombs</strong>
+            <p>Dark, pulsing, and mixed in among the fruit — slicing one costs you points instead of earning them</p>
+          </div>
+        </div>
+        <div class="gestureCard">
+          <div class="gestureIcon">📊</div>
+          <div>
+            <strong>Score & strike rate</strong>
+            <p>Shown live in the top bar — tap 🧹 to reset your score and start a fresh run</p>
+          </div>
+        </div>
+      </div>
+      <p class="guideNote">Missed fruits just fall away — no lives, no game over, just your score.</p>
     </div>
   </div>
 

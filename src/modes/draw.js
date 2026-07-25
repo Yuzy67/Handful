@@ -8,6 +8,8 @@ const CORE_RADIUS = [0.026, 0.044, 0.036, 0.04]; // electric thinnest (like an a
 const TIP_SMOOTHING = 0.3; // lower = smoother line, higher = more responsive to raw jitter
 const GRAB_SMOOTHING = 0.3; // same idea, applied to the fist's drag position
 const GRAB_BOUNDS = { x: 4, y: 3, z: 3 };
+const MAX_FINISHED_STROKES = 60; // a generous cap — normal use never approaches it, but it
+// bounds how much geometry can accumulate over a very long, uninterrupted drawing session
 
 // dynamic import so the vert/frag shaders live in their own files, same
 // pattern as every other shader in this project
@@ -127,6 +129,15 @@ export function createDrawMode(scene, camera, statusEl, isTouchPhone) {
         coreMat: activeCoreMat,
         haloMat: activeHaloMat,
       });
+      if (strokes.length > MAX_FINISHED_STROKES) {
+        const oldest = strokes.shift();
+        group.remove(oldest.core);
+        group.remove(oldest.halo);
+        oldest.core.geometry.dispose();
+        oldest.halo.geometry.dispose();
+        oldest.coreMat.dispose();
+        oldest.haloMat.dispose();
+      }
     }
     activePoints = null;
     activeCoreMesh = null;

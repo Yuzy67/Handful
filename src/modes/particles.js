@@ -137,14 +137,23 @@ export function createParticleMode(scene, camera, statusEl, isTouchPhone) {
     }
   }
 
-  function tick() {
-    currentScale += (targetScale - currentScale) * 0.14;
-    currentStretch += (targetStretch - currentStretch) * 0.14;
-    currentStretchAxis.lerp(targetStretchAxis, 0.14);
+  function tick(dt) {
+    // Converted from flat per-frame lerp factors to dt-scaled exponential
+    // decay — the old flat-factor version made the whole mode respond and
+    // animate faster on high-refresh-rate displays (90/120Hz phones) and
+    // slower on 60Hz ones, since it was applied once per render call
+    // rather than scaled to real elapsed time. These decay rates are
+    // chosen to closely reproduce the original feel at a 60fps reference.
+    const scaleFactor = 1 - Math.exp(-9 * dt);
+    const weightFactor = 1 - Math.exp(-6.5 * dt);
+
+    currentScale += (targetScale - currentScale) * scaleFactor;
+    currentStretch += (targetStretch - currentStretch) * scaleFactor;
+    currentStretchAxis.lerp(targetStretchAxis, scaleFactor);
     if (currentStretchAxis.lengthSq() > 0.0001) currentStretchAxis.normalize();
 
     for (let i = 0; i < 5; i++) {
-      currentWeights[i] += (targetWeights[i] - currentWeights[i]) * 0.1;
+      currentWeights[i] += (targetWeights[i] - currentWeights[i]) * weightFactor;
     }
 
     // Keep the combined size on screen regardless of scale + stretch + aspect ratio
@@ -162,8 +171,8 @@ export function createParticleMode(scene, camera, statusEl, isTouchPhone) {
     material.uniforms.uStretchAmount.value = displayStretch;
     material.uniforms.uStretchAxis.value.copy(currentStretchAxis);
     material.uniforms.uWeights.value = currentWeights;
-    material.uniforms.uTime.value += 0.01;
-    particles.rotation.y += 0.0025;
+    material.uniforms.uTime.value += 0.6 * dt;
+    particles.rotation.y += 0.15 * dt;
   }
 
   function setActive(active) {
